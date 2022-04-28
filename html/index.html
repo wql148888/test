@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../icon-font/iconfont.css">
+</head>
+<body>
+    <audio src="./陈奕迅-孤勇者.mp3"></audio>
+  <!-- 多媒体空间 -->
+  <div class="media">
+    <!-- 播放暂停按钮 -->
+    <div class="playOrPause">
+      <i class="iconfont icon-bofang"></i>
+    </div>
+    <!-- 播放事件 -->
+    <div class="time">
+      <span class="currentMinute">00</span>
+      :
+      <span class="currentSecond">00</span>
+      /
+      <span class="durationMinute">04</span>
+      :
+      <span class="durationSecond">16</span>
+    </div>
+    <!-- 播放进度条 -->
+    <div class="playRange">
+      <div class="currentRange"></div>
+      <div class="playBtn"></div>
+    </div>
+    <!-- 声音控件 -->
+    <div class="volume">
+      <!-- 声音大小控制 -->
+      <div class="volumeRange">
+        <div class="currentVolume"></div>
+        <div class="volumeBtn"></div>
+      </div>
+      <!-- 声音按钮 -->
+      <i class="iconfont icon-Volume"></i>
+    </div>
+  </div>
+</body>
+</html>
+<script src="./jquery.js"></script>
+<script>
+  let totalTime 
+  // let currentTime
+  // 给页面绑定一个不被选中的事件
+  $(document)[0].onselectstart=function() {
+    return false
+  }
+  // 页面时间渲染
+  $('audio')[0].ontimeupdate=function() {
+    totalTime = $('audio')[0].duration
+    let currentMinute = parseInt(this.currentTime/60)
+    let currentSecond = parseInt(this.currentTime%60)
+    let totalMinute = parseInt(totalTime/60)
+    let totalSecond = parseInt(totalTime%60)
+    $('.currentMinute').text(`${currentMinute < 10?'0'+currentMinute:currentMinute}`)
+    $('.currentSecond').text(`${currentSecond < 10?'0'+currentSecond:currentSecond}`)
+    $('.durationMinute').text(`${totalMinute < 10?'0'+totalMinute:totalMinute}`)
+    $('.durationSecond').text(`${totalSecond < 10?'0'+totalSecond:totalSecond}`)
+    let x = parseInt(this.currentTime/totalTime*parseInt($('.playRange').width()))
+    $('.currentRange').css('width',`${x}px`)
+    $('.playBtn').css('left',`${x}px`)
+  }
+    
+  
+  // 点击切换播放暂停
+  $('.playOrPause i').click(function() {
+    if($(this).hasClass('icon-bofang')) {
+      $(this).removeClass('icon-bofang')
+      $(this).addClass('icon-zanting')
+      $('audio')[0].play()
+    }
+    else {
+      $(this).removeClass('icon-zanting')
+      $(this).addClass('icon-bofang')
+      $('audio')[0].pause()
+      
+    }
+  })
+  // 点击切换静音音量
+  $('.volume i').click(function() {
+    if($(this).hasClass('icon-Volume')) {
+      $(this).removeClass('icon-Volume')
+      $(this).addClass('icon-jingyin')
+      $('audio')[0].muted = true
+    } else {
+      $(this).removeClass('icon-jingyin')
+      $(this).addClass('icon-Volume')
+      $('audio')[0].muted = false
+    }
+    // 点击显示隐藏音量条
+    if($(this).prev().css('display') === 'block') $(this).prev().css('display','none')
+    else {
+      $(this).prev().css('display','block')
+    }
+  })
+  // 给隐藏音量条绑定拖拽事件
+    $('.volume')[0].onmousedown = function(e) {
+      if(e.target.className === 'volumeBtn') {
+        $(document)[0].onmousemove=e => {
+          let y = this.offsetTop - e.pageY -parseInt($('.volumeBtn').height()/2)
+          if(y < 0) y = 0
+          if(y >= parseInt($('.volumeRange').height())) y = parseInt($('.volumeRange').height()- $('.volumeBtn').height())
+          $('.volumeBtn').css('bottom',`${y}px`)
+          $('.currentVolume').css('height',`${y}px`)
+         $('audio')[0].volume = parseInt($('.currentVolume').css('height'))/parseInt($('.volumeRange').height())
+        }
+      }
+        
+      }
+  // 音量条拖拽移动
+  $('.playBtn')[0].onmousedown=function() {
+    // 给文档绑定鼠标移动事件
+    $(document)[0].onmousemove= e => {
+      let x = e.pageX - $('.playRange')[0].offsetLeft - this.clientWidth/2
+      let xMax = $('.playRange')[0].clientWidth
+      if(x < 0) x = 0
+      if(x >= xMax) x = xMax
+      $(this).css('left',`${x}px`)
+      $('.currentRange').css('width',`${x}px`)
+      console.log(parseInt($('.playRange').css('width')));
+      let currentTime1 = x/parseInt($('.playRange').css('width'))*totalTime
+      $('audio')[0].currentTime = currentTime1
+    }
+  }
+  // 给文档绑定鼠标松开事件 并且 给文档的鼠标移动事件解绑
+  $(document)[0].onmouseup = function() {
+    $(document)[0].onmousemove = null
+  }
+  
+</script>
